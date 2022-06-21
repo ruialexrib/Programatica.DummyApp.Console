@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,17 +47,49 @@ static async Task Init(IServiceProvider services)
     IServiceProvider provider = serviceScope.ServiceProvider;
 
     var userService = provider.GetRequiredService<IService<User>>();
+
     await userService.CreateAsync(new User
     {
         Name = "user1",
         Email = "email@server.com",
         Password = "pass"
     });
-    var user = await userService.InspectAsync(id: 1);
+
+    await userService.CreateAsync(new User
+    {
+        Name = "user2",
+        Email = "email@server.com",
+        Password = "pass"
+    });
+
+    var user1 = await userService.InspectAsync(id: 1);
     Console.WriteLine(@$"
+        Id: {user1.Id}, 
+        SystemId: {user1.SystemId}, 
+        Name: {user1.Name}, 
+        CreatedDate: {user1.CreatedDate}, 
+        CreatedUser: {user1.CreatedUser}");
+
+    var user2 = (await userService.GetAsync(x => x.Id == 2))
+                       .FirstOrDefault();
+
+    Console.WriteLine(@$"
+        Id: {user2.Id}, 
+        SystemId: {user2.SystemId}, 
+        Name: {user2.Name}, 
+        CreatedDate: {user2.CreatedDate}, 
+        CreatedUser: {user2.CreatedUser}");
+
+    var users = (await userService.GetAsync());
+
+    foreach (var user in users)
+    {
+        Console.WriteLine(@$"
         Id: {user.Id}, 
         SystemId: {user.SystemId}, 
         Name: {user.Name}, 
         CreatedDate: {user.CreatedDate}, 
         CreatedUser: {user.CreatedUser}");
+    }
+
 }
